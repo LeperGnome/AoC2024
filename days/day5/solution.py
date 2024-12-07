@@ -28,7 +28,7 @@ for l in lines:
     else:
         updates.append(list(map(int, l.split(","))))
 
-res = 0 
+res = 0
 
 for idx, upd in enumerate(updates):
     found = False
@@ -43,8 +43,12 @@ for idx, upd in enumerate(updates):
             pidx = widx + 1  # because using upd[1:]
 
             # breaking rules
-            bta = before & should_come_after[page]  # should be moved from before to after
-            atb = after & should_come_before[page]  # should be moved from after to before
+            bta = (
+                before & should_come_after[page]
+            )  # should be moved from before to after
+            atb = (
+                after & should_come_before[page]
+            )  # should be moved from after to before
 
             for el in bta | atb:
                 eidx = upd.index(el)
@@ -58,6 +62,6 @@ for idx, upd in enumerate(updates):
         else:
             found = True
             if broke:
-                res += upd[int(len(upd)/2)]
+                res += upd[int(len(upd) / 2)]
 
 print(res)

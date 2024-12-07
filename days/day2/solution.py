@@ -5,7 +5,7 @@ FNAME = "./inp.txt"
 with open(FNAME, "r") as f:
     lines = [[int(x) for x in l.strip().split(sep=" ")] for l in f.readlines()]
 
-safe_cnt = {} 
+safe_cnt = {}
 lines_orig = deepcopy(lines)
 lines = [(l, True, idx) for idx, l in enumerate(lines)]
 
@@ -19,7 +19,7 @@ for l, c, lid in lines:
     print(l)
     for idx, el in enumerate(l[1:]):
         print(idx)
-        jump = abs(el-prev)
+        jump = abs(el - prev)
         if jump > 3 or jump == 0:
             if c:
                 lcp1 = deepcopy(l)
@@ -29,7 +29,7 @@ for l, c, lid in lines:
                 print(f"adding {lcp1}")
                 lines.append((lcp1, False, lid))
 
-                del lcp2[idx+1]
+                del lcp2[idx + 1]
                 print(f"adding {lcp2}")
                 lines.append((lcp2, False, lid))
             break
@@ -46,11 +46,11 @@ for l, c, lid in lines:
                 print(f"adding {lcp1}")
                 lines.append((lcp1, False, lid))
 
-                del lcp2[idx+1]
+                del lcp2[idx + 1]
                 print(f"adding {lcp2}")
                 lines.append((lcp2, False, lid))
 
-                del lcp3[idx-1]
+                del lcp3[idx - 1]
                 print(f"adding {lcp3}")
                 lines.append((lcp3, False, lid))
             break

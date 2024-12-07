@@ -1,9 +1,11 @@
 import re
 
+
 class bcolors:
-    yes = '\033[92m'
-    no = '\033[91m'
-    ENDC = '\033[0m'
+    yes = "\033[92m"
+    no = "\033[91m"
+    ENDC = "\033[0m"
+
 
 FNAME = "./inp.txt"
 
@@ -42,7 +44,7 @@ for m in matches:
     s = m.group()
     a, b = s.split(",", 1)
     a = int(a[4:])
-    b = int(b[:len(b)-1])
+    b = int(b[: len(b) - 1])
     res += a * b
 
 print(res)
