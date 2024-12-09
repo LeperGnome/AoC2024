@@ -2,8 +2,6 @@ from copy import deepcopy
 
 FNAME = "./inp.txt"
 
-Point = tuple[int, int]
-
 with open(FNAME, "r") as f:
     data = f.read().strip()
 
@@ -12,7 +10,6 @@ data = [
     [-idx / 2, int(d), False] if idx % 2 != 0 else [int(idx / 2), int(d), False]
     for idx, d in enumerate(data)
 ]
-print(data)
 
 arr = []
 
