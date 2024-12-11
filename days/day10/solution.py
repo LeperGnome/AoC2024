@@ -29,36 +29,22 @@ def get_next_points(p: Point) -> list[Point]:
     return res
 
 
-for th in trailheads:
-    seen: set[tuple[Point, tuple]] = set()
-    q: list[tuple[Point, tuple[Point, ...]]] = [
-        (
-            th,  #     new point
-            (th,),  #  history
-        ),
-    ]
-    score = 0
+q: list[Point] = trailheads
+score = 0
 
-    while q:
-        p, hist = q.pop()
-        if p in seen:
-            continue
+while q:
+    p = q.pop()
 
-        seen.add((p, hist))
-        val = MAP[p[0]][p[1]]
+    val = MAP[p[0]][p[1]]
 
-        # reached the peak
-        if val == 9:
-            score += 1
+    # reached the peak
+    if val == 9:
+        score += 1
 
-        next_points = get_next_points(p)
-        for np in next_points:
-            nval = MAP[np[0]][np[1]]
-            if nval - val == 1:
-                a = list(hist)
-                q.append((np, tuple(list(hist) + [np])))
+    next_points = get_next_points(p)
+    for np in next_points:
+        nval = MAP[np[0]][np[1]]
+        if nval - val == 1:
+            q.append(np)
 
-    scores[th] = score
-
-
-print(sum(scores.values()))
+print(score)
