@@ -1,5 +1,4 @@
-from collections import deque, defaultdict
-from functools import reduce
+from collections import deque
 from contextlib import contextmanager
 
 FNAME = "./inp.txt"
@@ -12,13 +11,11 @@ max_row = len(MAP) - 1
 max_col = len(MAP[0]) - 1
 Point = tuple[int, int]
 
+
 class bcolors:
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
+    OKBLUE = "\033[94m"
+    ENDC = "\033[0m"
+
 
 def get_coords(c: str) -> list[Point]:
     res = []
@@ -36,7 +33,6 @@ def map_at(p: Point) -> str:
 def add_points(p1: Point, p2: Point) -> Point:
     return (p1[0] + p2[0], p1[1] + p2[1])
 
-max_cheat_turns = 20 -1
 
 def print_map(seen):
     for ri, row in enumerate(MAP):
@@ -59,12 +55,11 @@ def alt_buffer():
         print("\033[?1049l\033[23;0;0t", end="")
 
 
-
-START = get_coords("S")[0]
-END = get_coords("E")[0]
-dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
 def find_shortest_path() -> tuple[int, dict[Point, int]]:
+    START = get_coords("S")[0]
+    END = get_coords("E")[0]
+    dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+
     q = deque([(START, 0)])
     path_took = {}
     seen: set[Point] = set()
@@ -81,23 +76,18 @@ def find_shortest_path() -> tuple[int, dict[Point, int]]:
 
         for d in dirs:
             np = add_points(pt, d)
-            if (
-                0 <= np[0] <= max_row and
-                0 <= np[1] <= max_col and
-                map_at(np) != "#"
-            ):
-                q.append((np, l+1))
+            if 0 <= np[0] <= max_row and 0 <= np[1] <= max_col and map_at(np) != "#":
+                q.append((np, l + 1))
     return -1, path_took
 
-should_be_saved = 100
 
-def get_cheat_exits(p: Point) -> set[Point]:
+def get_cheat_exits(p: Point, max_cheat_turns) -> set[Point]:
     exits = set()
-    for i in range((-max_cheat_turns), max_cheat_turns+1):
-        for j in range((-max_cheat_turns), max_cheat_turns+1):
+    for i in range((-max_cheat_turns), max_cheat_turns + 1):
+        for j in range((-max_cheat_turns), max_cheat_turns + 1):
             ex = add_points(p, (i, j))
             if (
-                abs(i) + abs(j) <= max_cheat_turns 
+                abs(i) + abs(j) <= max_cheat_turns
                 and 0 <= ex[0] <= max_row
                 and 0 <= ex[1] <= max_col
                 and map_at(ex) != "#"
@@ -106,34 +96,23 @@ def get_cheat_exits(p: Point) -> set[Point]:
     return exits
 
 
-seen_cheats = set()
-def saved_count() -> dict[int, set[tuple[Point, Point]]]:
+def saved_count(max_cheat_turns: int, should_be_saved: int) -> set[Point]:
+    seen_cheats = set()
     _, pt_to_took = find_shortest_path()
-    res = defaultdict(set)
     for pt, took in pt_to_took.items():
-        for d in dirs:
-            # print(f"{pt=} {d=}   {res}")
-            np = add_points(pt, d)
-            if (
-                0 <= np[0] <= max_row and
-                0 <= np[1] <= max_col and
-                map_at(np) == "#"
-            ):
-                exits = get_cheat_exits(np)
-                for ex in exits:
-                    ntook = abs(ex[0] - pt[0]) + abs(ex[1] - pt[1]) + took
+        exits = get_cheat_exits(pt, max_cheat_turns)
+        for ex in exits:
+            ntook = abs(ex[0] - pt[0]) + abs(ex[1] - pt[1]) + took
 
-                    if (bt := pt_to_took[ex] - ntook) >= should_be_saved:
-                        seen_cheats.add((pt,ex))
-                        res[bt].add((pt, ex))
-                        continue
+            if pt_to_took[ex] - ntook >= should_be_saved:
+                seen_cheats.add((pt, ex))
+                continue
 
-    return res
+    return seen_cheats
 
-res = saved_count()
-filtered = {k: v for k, v in res.items() if k >= should_be_saved}
-print(filtered)
-print(len(seen_cheats))
 
-# 1086647 - too hight
-# 960765 - too low
+max_cheat_turns = 20  # 2 for pt. 1
+should_be_saved = 100
+
+res = saved_count(max_cheat_turns, should_be_saved)
+print(len(res))
