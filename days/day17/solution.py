@@ -1,7 +1,4 @@
 from typing import Callable
-import multiprocessing as mp
-from copy import deepcopy
-import sys
 
 
 FNAME = "./inp.txt"
@@ -11,6 +8,7 @@ with open(FNAME, "r") as f:
 
 
 Instruction = Callable[[int], None]
+
 
 class Processor:
     rA: int
@@ -22,7 +20,6 @@ class Processor:
 
     _cnt: int
     _imap: dict[int, Instruction]
-
 
     def __init__(self, rA: int, rB: int, rC: int, prog: list[int]):
         self.rA = rA
@@ -96,7 +93,7 @@ class Processor:
             return False
 
         inst = self._get_instruction_method(self.prog[self._cnt])
-        op = self.prog[self._cnt+1]
+        op = self.prog[self._cnt + 1]
 
         inst(op)
         return True
@@ -107,12 +104,12 @@ class Processor:
             # print(self._stdout)
             # print(*self.prog)
             # print(*[
-            #     "^" if idx == self._cnt else " " 
+            #     "^" if idx == self._cnt else " "
             #     for idx, _ in enumerate(self.prog)
             # ])
 
             inst = self._get_instruction_method(self.prog[self._cnt])
-            op = self.prog[self._cnt+1]
+            op = self.prog[self._cnt + 1]
 
             # print(inst.__name__, op)
             # input()
@@ -121,7 +118,8 @@ class Processor:
 
         return ",".join([str(x) for x in self.stdout])
 
-r, prog = data.split('\n\n')
+
+r, prog = data.split("\n\n")
 regs = []
 for i in r.splitlines(False):
     regs.append(int(i.split(": ", 1)[1]))
@@ -129,39 +127,82 @@ for i in r.splitlines(False):
 a, b, c = regs
 prog = [int(i) for i in prog.split(": ", 1)[1].split(",")]
 
-def calc(n: int, start:int, step: int, prog: list[int]):
-    a = start
+
+# --- manual approach
+
+
+def alg(a, b=0, c=0):
+    out = []
     while True:
-        print(a)
-        proc = Processor(a, b, c, prog)
-        while proc.step():
-            if len(proc.stdout) > 7:
-                print(proc.rA, proc.rB, proc.rC)
-                print(proc.stdout)
-            if proc.stdout != prog[:len(proc.stdout)]:
-                break
-        else:
-            if proc.stdout == prog:
-                break
-        a *= 8
-    print(f"{n} res: {a}")
-    sys.exit()
+        b = (a & 7) ^ 3
+        c = a >> b
+        b ^= 5 ^ c
+        a >>= 3
+        out.append(b & 7)
+        if a == 0:
+            break
+    return out
 
-if __name__ == "__main__":
-    # s = 627500000
-    # s = 2867000000
-    s = 1
-    # s = 0
-    nproc = 1
-    workers = []
 
-    ctx = mp.get_context('spawn')
+def find_quine(prog: list[int], start: int, a: int) -> int:
+    res = set()
 
-    for w in range(nproc):
-        args = (w, s+w, nproc, deepcopy(prog),)
-        p = ctx.Process(target=calc, args=args)
-        p.start()
-        workers.append(p)
+    for i in range(8):
+        acc = (a << 3) + i
+        out = alg(acc)
+        print(acc, out)
+        if out == prog[start:]:
+            if out == prog:
+                res.add(acc)
+            else:
+                # this gives me the ability to back-track unsuccessfull 'a'
+                na = find_quine(prog, start - 1, acc)
+                if na:
+                    res.add(na)
+    if res:
+        return min(res)
+    return 0
 
-    for w in workers[::-1]:
-        w.join()
+
+print(find_quine(prog, len(prog) - 1, 0))
+
+# --- brute force didn't work ---
+#
+# def calc(n: int, start:int, step: int, prog: list[int]):
+#     a = start
+#     while True:
+#         print(a)
+#         proc = Processor(a, b, c, prog)
+#         while proc.step():
+#             if len(proc.stdout) > 7:
+#                 print(proc.rA, proc.rB, proc.rC)
+#                 print(proc.stdout)
+#             if proc.stdout != prog[:len(proc.stdout)]:
+#                 break
+#         else:
+#             if proc.stdout == prog:
+#                 break
+#         a *= 8
+#     print(f"{n} res: {a}")
+#     sys.exit()
+#
+# if __name__ == "__main__":
+#     # s = 627500000
+#     # s = 2867000000
+#     s = 1
+#     # s = 0
+#     nproc = 1
+#     workers = []
+#
+#     ctx = mp.get_context('spawn')
+#
+#     for w in range(nproc):
+#         args = (w, s+w, nproc, deepcopy(prog),)
+#         p = ctx.Process(target=calc, args=args)
+#         p.start()
+#         workers.append(p)
+#
+#     for w in workers[::-1]:
+#         w.join()
+#
+# --- not really working ---
